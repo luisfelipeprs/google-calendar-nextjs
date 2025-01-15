@@ -6,7 +6,13 @@ const Schedule = () => {
     email: '',
     selectedDateTime: '',
   });
-  const [availableTimes, setAvailableTimes] = useState<any[]>([]);
+  type AvailableTime = {
+    start: string;
+    end: string;
+  };
+  
+  const [availableTimes, setAvailableTimes] = useState<AvailableTime[]>([]);
+  
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

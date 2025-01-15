@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { Geist, Geist_Mono } from "next/font/google";
+import Link from "next/link";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,15 +22,14 @@ export default function Home() {
         <p className="text-lg sm:text-xl font-light text-white mb-8">
           Um sistema simples para integrar seu agendamento diretamente ao Google Calendar.
         </p>
-        <a
+        <Link
           href="/Schedule"
           className="px-8 py-4 text-lg font-semibold bg-gradient-to-r from-blue-600 to-blue-800 rounded-full shadow-lg hover:from-blue-500 hover:to-blue-700 transition-all"
         >
           Agende Agora
-        </a>
+        </Link>
       </main>
 
-      {/* About Section */}
       <section className="max-w-3xl mx-auto text-center px-8 mb-16">
         <h2 className="text-3xl font-semibold text-white mb-4">Sobre o Projeto</h2>
         <p className="text-lg font-light text-white mb-8">
@@ -66,10 +65,10 @@ export default function Home() {
 
       <footer className="text-center py-6 bg-gray-900">
         <div className="flex justify-center gap-8">
-          <a href="https://www.linkedin.com/in/seulinkedin" target="_blank" className="text-lg hover:text-blue-400 transition">
+          <a href="https://www.linkedin.com/in/luisfelipeprs" target="_blank" className="text-lg hover:text-blue-400 transition">
             LinkedIn
           </a>
-          <a href="https://github.com/seuusername" target="_blank" className="text-lg hover:text-gray-400 transition">
+          <a href="https://github.com/luisfelipeprs" target="_blank" className="text-lg hover:text-gray-400 transition">
             GitHub
           </a>
         </div>

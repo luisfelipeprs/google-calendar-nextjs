@@ -23,12 +23,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   });
 
   // Filtrar eventos para obter horários livres
-  const busyTimes = events.data.items?.map((event: any) => {
-    return {
-      start: new Date(event.start.dateTime).getTime(),
-      end: new Date(event.end.dateTime).getTime(),
-    };
-  }) || [];
+  const busyTimes = events.data.items?.map((event) => {
+    const start = event.start?.dateTime ? new Date(event.start.dateTime).getTime() : null;
+    const end = event.end?.dateTime ? new Date(event.end.dateTime).getTime() : null;
+  
+    if (start && end) {
+      return { start, end };
+    }
+    return null;
+  }).filter(Boolean) as Array<{ start: number; end: number }>;
+  
 
   const availableTimes = getAvailableTimes(busyTimes, weekdaysOnly);
 
@@ -51,7 +55,10 @@ function getAvailableTimes(busyTimes: Array<{ start: number; end: number }>, wee
     if (weekdaysOnly && (dayOfWeek === 0 || dayOfWeek === 6)) {
       continue; // Ignora sábado e domingo se "somente dias úteis" estiver ativado
     }
-
+    if (new Date(time).getHours() < workHoursStart || new Date(time).getHours() >= workHoursEnd) {
+      continue; // Ignora horários fora do horário comercial
+    }
+    
     // Verificar se o horário está livre
     const isBusy = busyTimes.some(busy => {
       return time >= busy.start && time < busy.end;
