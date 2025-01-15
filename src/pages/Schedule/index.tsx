@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 const Schedule = () => {
   const [formData, setFormData] = useState({
@@ -94,6 +95,11 @@ const Schedule = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-indigo-500 to-purple-700">
       <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-lg space-y-8">
+      <Link href="/">
+          <p className="text-indigo-600 hover:text-indigo-800 font-semibold underline">
+            &larr; Voltar para Home
+          </p>
+        </Link>
         <h1 className="text-3xl font-bold text-center text-gray-800 mb-4">Agendar Reunião</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
