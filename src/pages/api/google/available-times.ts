@@ -2,7 +2,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { google } from 'googleapis';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { startDate, endDate, weekdaysOnly } = req.body; // startDate e endDate definidos pelo usuário
+  const { startDate, endDate } = req.body; // startDate e endDate definidos pelo usuário
+
   const oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET
@@ -14,53 +15,63 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
-  const events = await calendar.events.list({
-    calendarId: 'primary',
-    timeMin: new Date(startDate).toISOString(),
-    timeMax: new Date(endDate).toISOString(),
-    singleEvents: true,
-    orderBy: 'startTime',
-  });
+  try {
+    const events = await calendar.events.list({
+      calendarId: 'primary',
+      timeMin: new Date(startDate).toISOString(),
+      timeMax: new Date(endDate).toISOString(),
+      singleEvents: true,
+      orderBy: 'startTime',
+    });
 
-  // Filtrar eventos para obter horários livres
-  const busyTimes = events.data.items?.map((event) => {
-    const start = event.start?.dateTime ? new Date(event.start.dateTime).getTime() : null;
-    const end = event.end?.dateTime ? new Date(event.end.dateTime).getTime() : null;
-  
-    if (start && end) {
-      return { start, end };
-    }
-    return null;
-  }).filter(Boolean) as Array<{ start: number; end: number }>;
-  
+    const busyTimes = events.data.items?.map((event) => {
+      const start = event.start?.dateTime ? new Date(event.start.dateTime).getTime() : null;
+      const end = event.end?.dateTime ? new Date(event.end.dateTime).getTime() : null;
 
-  const availableTimes = getAvailableTimes(busyTimes, weekdaysOnly);
+      if (start && end) {
+        return { start, end };
+      }
+      return null;
+    }).filter(Boolean) as Array<{ start: number; end: number }>;
 
-  res.status(200).json(availableTimes);
+    const availableTimes = getAvailableTimes(busyTimes, startDate, endDate);
+
+    res.status(200).json(availableTimes);
+  } catch (error) {
+    console.error('Error fetching calendar events:', error);
+    res.status(500).json({ error: 'Failed to fetch calendar events' });
+  }
 }
 
-function getAvailableTimes(busyTimes: Array<{ start: number; end: number }>, weekdaysOnly: boolean) {
+function getAvailableTimes(
+  busyTimes: Array<{ start: number; end: number }>,
+  startDate: string,
+  endDate: string
+) {
   const availableSlots: Array<{ start: number; end: number }> = [];
   const workHoursStart = 9; // 9:00 AM
   const workHoursEnd = 18; // 6:00 PM
-  const now = Date.now();
 
-  // define o período de verificação (Exemplo: próxima semana)
-  const checkStart = now;
-  const checkEnd = checkStart + 7 * 24 * 60 * 60 * 1000; // Uma semana a frente
+  const start = new Date(startDate).getTime();
+  const end = new Date(endDate).getTime();
 
-  for (let time = checkStart; time < checkEnd; time += 60 * 60 * 1000) {
-    // Verificar se é um dia útil ou fim de semana
-    const dayOfWeek = new Date(time).getDay(); // 0 - Domingo, 1 - Segunda, ..., 6 - Sábado
-    if (weekdaysOnly && (dayOfWeek === 0 || dayOfWeek === 6)) {
-      continue; // Ignora sábado e domingo se "somente dias úteis" estiver ativado
+  for (let time = start; time < end; time += 60 * 60 * 1000) {
+    const date = new Date(time);
+    const dayOfWeek = date.getDay(); // 0 - Domingo, 1 - Segunda, ..., 6 - Sábado
+
+    // Filtrar para dias úteis
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      continue; // Ignora sábado e domingo
     }
-    if (new Date(time).getHours() < workHoursStart || new Date(time).getHours() >= workHoursEnd) {
-      continue; // Ignora horários fora do horário comercial
+
+    // Filtrar para horários comerciais
+    const hour = date.getHours();
+    if (hour < workHoursStart || hour >= workHoursEnd) {
+      continue; // Ignora horários fora do expediente
     }
-    
-    // Verificar se o horário está livre
-    const isBusy = busyTimes.some(busy => {
+
+    // Verificar se o horário está ocupado
+    const isBusy = busyTimes.some((busy) => {
       return time >= busy.start && time < busy.end;
     });
 
