@@ -23,10 +23,15 @@ const CalendarComponent: React.FC<CalendarComponentProps> = ({ onDateChange, sel
     }
   };
 
-  const isSelected = (day: number) =>
-    selectedDate.getDate() === day &&
-    selectedDate.getMonth() === currentMonth &&
-    selectedDate.getFullYear() === currentYear;
+  const isSelected = (day: number) => {
+    if (!selectedDate) return false; // Verifique se `selectedDate` está definido
+    return (
+      selectedDate.getDate() === day &&
+      selectedDate.getMonth() === currentMonth &&
+      selectedDate.getFullYear() === currentYear
+    );
+  };
+  
 
   const isWeekend = (date: Date) => {
     const dayOfWeek = date.getDay();

@@ -4,11 +4,12 @@ import TimeSelectComponent from '../Components/TimeSelectComponent';
 import ButtonComponent from '../Components/ButtonComponent';
 
 const SchedulePage: React.FC = () => {
-  const [selectedDate, setSelectedDate] = useState<Date>(() => {
+  const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
     const today = new Date();
     today.setDate(today.getDate() + 1); // Adiciona um dia
     return today;
   });
+  
 
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [name, setName] = useState<string>('your-name-here');
@@ -28,7 +29,7 @@ const SchedulePage: React.FC = () => {
       return;
     }
 
-    const dateString = selectedDate.toISOString().split('T')[0];
+    const dateString = selectedDate!.toISOString().split('T')[0];
 
     try {
       const response = await fetch('/api/google/create-event', {
@@ -60,12 +61,12 @@ const SchedulePage: React.FC = () => {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-2xl flex">
         <div className="flex-1">
-          <CalendarComponent selectedDate={selectedDate} onDateChange={handleDateChange} />
+          <CalendarComponent selectedDate={selectedDate!} onDateChange={handleDateChange} />
         </div>
         <div className="w-[2px] bg-gray-300 mx-10"></div>
         <div className="flex-1 flex flex-col justify-center items-center space-y-4">
           <TimeSelectComponent
-            selectedDate={selectedDate}
+            selectedDate={selectedDate!}
             onTimeChange={(time) => setSelectedTime(time)}
           />
           <ButtonComponent onClick={handleScheduleClick} text="Agendar consultoria gratuita" />
