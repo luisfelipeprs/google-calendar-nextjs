@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import Arrow from '../assets/Vector.svg'
 
 type AvailableTime = {
   start: string;
