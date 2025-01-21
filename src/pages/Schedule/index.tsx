@@ -19,6 +19,8 @@ const SchedulePage: React.FC = () => {
   };
 
   const handleScheduleClick = async () => {
+    setName('your-name-here');
+    setEmail('your-email-here');
     console.log(name, email, selectedTime);
 
     if (!name || !email || !selectedTime) {
@@ -46,7 +48,7 @@ const SchedulePage: React.FC = () => {
         throw new Error('Erro ao agendar a reunião.');
       }
 
-      const data = await response.json();
+      await response.json();
       alert('Reunião marcada com sucesso!');
     } catch (error) {
       console.error('Erro ao marcar a reunião:', error);
