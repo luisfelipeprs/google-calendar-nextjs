@@ -8,6 +8,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const { name, email, date, time } = req.body;
 
+  // Validação básica dos campos
+  if (!name || !email || !date || !time) {
+    return res.status(400).json({ message: 'Por favor, preencha todos os campos obrigatórios.' });
+  }
+
+  // Validar formato do date e time
+  const startDateTime = `${date}T${time}`;
+  const startTime = new Date(startDateTime);
+
+  if (isNaN(startTime.getTime())) {
+    return res.status(400).json({ message: 'Data ou hora inválida.' });
+  }
+
+  // Configurações do OAuth2
   const oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET
@@ -19,15 +33,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
+  // Configurar evento
   const event = {
     summary: `Reunião com ${name}`,
     description: `Reunião marcada por ${name} (${email})`,
     start: {
-      dateTime: new Date(`${date}T${time}`).toISOString(),
+      dateTime: startTime.toISOString(),
       timeZone: 'America/Sao_Paulo',
     },
     end: {
-      dateTime: new Date(new Date(`${date}T${time}`).getTime() + 60 * 60 * 1000).toISOString(),
+      dateTime: new Date(startTime.getTime() + 60 * 60 * 1000).toISOString(), // Adiciona 1 hora
       timeZone: 'America/Sao_Paulo',
     },
     attendees: [{ email }],
